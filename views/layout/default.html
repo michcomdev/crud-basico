@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>DEMO</title>
+    <!--TODOS LOS CSS ANTES DEL BLOQUE DE CSS-->
+    <link rel="stylesheet" href="/public/css/bootstrap.lux.min.css">
+    <link rel="stylesheet" href="/public/DataTables/datatables.min.css">
+    <link rel="stylesheet" href="/public/fontawesome-5.9.0/css/all.css">
+    <link rel="stylesheet" href="/public/css/toastr.min.css">
+    <style>
+        .navbar {
+            padding-top:5px;
+            padding-bottom:5px;
+        }
+    </style>
+    {{#block "css"}}
+    {{/block}}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarColor01">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/test"> Test</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    
+    {{{ content }}}
+
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal_body"></div>
+                <div class="modal-footer" id="modal_footer"></div>
+            </div>
+        </div>
+    </div>
+    <!--TODOS LOS JS ANTES DEL BLOQUE DE JS-->
+    <script src="/public/js/jquery-3.4.1.min.js"></script>
+    <script src="/public/js/popper.min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/axios.min.js"></script>
+    <script src="/public/DataTables/datatables.min.js"></script>
+    <script src="/public/js/toastr.min.js"></script>
+    {{#block "js"}}
+    {{/block}}
+</body>
+</html>

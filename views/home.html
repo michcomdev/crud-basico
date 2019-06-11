@@ -1,0 +1,223 @@
+{{!< layout/default}}
+
+{{#extend "css"}}
+<!-- AQUI DENTRO LOS CSS DE HOME -->
+<style>
+</style>
+{{/extend}}
+
+<div class="container-fluid">
+    <h1>HOME</h1>
+    <button id="newPerson" type="button" class="btn btn-primary"><i class="fas fa-user-plus"></i> Nueva persona</button>
+    <div class="table-responsive">
+        <table id="table_persons" class="display">
+            <thead>
+                <tr>
+                    <th>RUT</th>
+                    <th>NOMBRE</th>
+                    <th>EDAD</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+{{#extend "js"}}
+<!-- AQUI DENTRO LOS JS DE HOME -->
+<script>
+const internals = {};
+$(document).ready( function () {
+    initPersonsTable()
+});
+
+$('#newPerson').on('click', function() {
+    newPersonModal();
+});
+
+function initPersonsTable() {
+    $.when(internals.tablePersons = $('#table_persons').DataTable({
+        language: {
+            emptyTable: 'No se han encontrado personas',
+            search: 'Buscar:',
+            paginate: {
+                previous: 'Anterior',
+                next: 'Siguiente'
+            }
+        },
+        order: [[ 0, 'desc' ]],
+        ordering: true,
+        responsive: false,
+        columns: [
+            {data: 'rut'},
+            {data: 'name'},
+            {data: 'age'},
+            {data: 'btn'}
+        ],
+        columnDefs: [ 
+            {
+                targets: 3,
+                data: null,
+                width: '20px',
+                defaultContent: `
+                    <center>
+                        <button class="btn btn-primary btn-sm btnPerson"><i class="fas fa-user-edit"></i></button>
+                    </center>
+                `
+            }
+        ]
+    })).then(async () => {
+        let response = await axios.get('/api/persons');
+        console.log(response)
+        if(response.data.ok) {
+            internals.tablePersons.rows().remove().draw();
+            internals.tablePersons.rows.add(response.data.ok).draw()
+        }
+
+        $('#table_persons tbody').on( 'click', '.btnPerson', function () {
+            internals.personSelected = {};
+            internals.personSelected.row = internals.tablePersons.row( $(this).parents('tr') );
+            internals.personSelected.data = internals.tablePersons.row( $(this).parents('tr') ).data();
+
+            personModal()
+        }) 
+    });
+    
+}
+
+function newPersonModal() {
+    $('#modal_title').html(`Agregar una nueva persona`)
+    
+    $.when($('#modal_body').html(`
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="personRut">RUT</label>
+                    <input type="text" class="form-control" id="personRut" value="" placeholder="Rut de la persona">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="personName">NOMBRE</label>
+                    <input type="text" class="form-control" id="personName" value="" placeholder="Nombre de la persona">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="personAge">EDAD</label>
+                    <input type="number" class="form-control" id="personAge" min=0 value="" placeholder="Edad de la persona">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Agregar</h4>
+                            <p class="card-text">Agregar una nueva persona. <button id="addPerson" type="button" class="btn btn-outline-info float-right" style="color:#3498db;"><i class="fas fa-user-plus"></i> Nueva persona</button></p>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>  
+    `)).then(async () => {
+        $('#addPerson').on('click', async function() {
+            let response = await axios.post('/api/person', {
+                rut: $('#personRut').val(),
+                name: $('#personName').val(),
+                age: $('#personAge').val()
+            })
+
+            console.log(response);
+            
+            if(response.data.ok) {
+                toastr.success('Persona agregada correctamente');
+                internals.tablePersons.row.add(response.data.ok).draw()
+                $('#modal').modal('hide');
+            }
+
+            if(response.data.err) {
+                toastr.error(response.data.err)
+            }
+        })
+    })
+
+    $('#modal_footer').html(`
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+    `)
+
+    $('#modal').modal('show')
+}
+
+function personModal() {
+    $('#modal_title').html(`${internals.personSelected.data.name.toUpperCase()}`)
+    
+    $.when($('#modal_body').html(`
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="personRut">RUT</label>
+                    <input disabled type="text" class="form-control" id="personRut" value="${internals.personSelected.data.rut}">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="personName">NOMBRE</label>
+                    <input type="text" class="form-control" id="personName" value="${internals.personSelected.data.name}">
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="personAge">EDAD</label>
+                    <input type="number" class="form-control" id="personAge" min=0 value="${internals.personSelected.data.age}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Modificar</h4>
+                            <p class="card-text">Una vez modifiques a la persona, no se podrá revertir. <button id="modPerson" type="button" class="btn btn-outline-info float-right" style="color:#3498db;"><i class="fas fa-user-edit"></i> Modificar esta persona</button></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Eliminar</h4>
+                            <p class="card-text">Una vez elimines a la persona, no se podrá revertir. <button type="button" class="btn btn-outline-danger float-right" style="color:#c0392b;" onclick="deletePerson('${internals.personSelected.data.rut}')"><i class="fas fa-trash-alt"></i> Eliminar esta persona</button></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>  
+    `)).then(async () => {
+        $('#modPerson').on('click', async function() {
+            let response = await axios.put('/api/person', {
+                rut: internals.personSelected.data.rut,
+                name: $('#personName').val(),
+                age: $('#personAge').val()
+            })
+
+            if(response.data.ok) {
+                toastr.success('Persona modificada correctamente');
+                internals.tablePersons.row(internals.personSelected.row).remove().draw();
+                internals.tablePersons.row.add(response.data.ok).draw()
+                $('#modal').modal('hide');
+            }
+        })
+    })
+
+    $('#modal_footer').html(`
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+    `)
+
+    $('#modal').modal('show')
+}
+
+async function deletePerson(rut) {
+    let response = await axios.delete('/api/person/'+rut);
+
+    if(response.data.ok) {
+        toastr.success(response.data.ok);
+        internals.tablePersons.row(internals.personSelected.row).remove().draw();
+        $('#modal').modal('hide');
+    };
+}
+</script>
+{{/extend}}
